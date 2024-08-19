@@ -29,7 +29,7 @@ gh repo clone LycanGraphycs/referenciaSanluis
 
 ## Autoría y Derechos de Autor
 
-Este proyecto fue desarrollado por [LycanGraphycs - Andres Mauricio Moreno Garavito]. Todos los derechos reservados.
+Este proyecto fue desarrollado por **LycanGraphycs - Andres Mauricio Moreno Garavito**. Todos los derechos reservados.
 
 **Prohibido copiar o distribuir este proyecto sin permiso explícito del autor.**
 
