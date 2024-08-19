@@ -27,3 +27,11 @@ gh repo clone LycanGraphycs/referenciaSanluis
 ### Instrucciones Adicionales:
 - **Archivo `https://github.com/LycanGraphycs/referenciaSanluis/blob/DataBase/dump-referenciaSl_db-202408061159.sql`:** Incluye un archivo SQL donde se encuentran los codigo CIE 10 actualizados y que son utilizafdos en el sector salud.
 
+## Autoría y Derechos de Autor
+
+Este proyecto fue desarrollado por [LycanGraphycs - Andres Mauricio Moreno Garavito]. Todos los derechos reservados.
+
+**Prohibido copiar o distribuir este proyecto sin permiso explícito del autor.**
+
+Si estás interesado en colaborar o utilizar este proyecto, por favor, contacta con el autor para obtener la autorización correspondiente.
+
