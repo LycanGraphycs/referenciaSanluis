@@ -20,5 +20,4 @@ Este es un proyecto de software desarrollado en Python utilizando la biblioteca 
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone https://github.com/usuario/sistema-gestion-turnos.git
-   cd sistema-gestion-turnos
+
