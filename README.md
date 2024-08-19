@@ -21,7 +21,6 @@ Este es un proyecto de software desarrollado en Python utilizando la biblioteca 
 ## Instalación
 
 1. **Clonar el repositorio:**
-   ```bash
 gh repo clone LycanGraphycs/referenciaSanluis
 - iniciar el archivo app_Lg.py
 
