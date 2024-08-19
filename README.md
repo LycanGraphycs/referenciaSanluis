@@ -20,4 +20,4 @@ Este es un proyecto de software desarrollado en Python utilizando la biblioteca 
 
 1. **Clonar el repositorio:**
    ```bash
-
+gh repo clone LycanGraphycs/referenciaSanluis
