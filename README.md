@@ -1,11 +1,11 @@
-# Sistema de Gestión de Turnos
+# Sistema de Gestión de Ingresos y Salidas - Referencia y Contrareferencia
 
-Este es un proyecto de software desarrollado en Python utilizando la biblioteca Tkinter para la interfaz gráfica de usuario (GUI) y MySQL como sistema de gestión de bases de datos. El objetivo principal del sistema es gestionar los turnos y registros de pacientes, permitiendo el registro, edición y generación de reportes de manera eficiente.
+Este es un proyecto de software desarrollado en Python utilizando la biblioteca Tkinter para la interfaz gráfica de usuario (GUI) y MySQL como sistema de gestión de bases de datos. El objetivo principal del sistema es gestionar los ingresos, salidas (Traslados) y registros de pacientes, permitiendo el registro, edición y generación de reportes de manera eficiente.
 
 ## Características del Sistema
 
 - **Registro de Pacientes:** Permite registrar nuevos pacientes, validando la entrada de datos y guardando la información en una base de datos MySQL.
-- **Gestión de Turnos:** Los usuarios pueden gestionar los turnos, asignando fechas y horas de atención.
+- **Gestión de Turnos:** Los usuarios pueden gestionar los turnos, asignando fechas y horas de atención o aceptación de traslado.
 - **Edición de Registros:** Los administradores pueden editar los datos de los pacientes, con un historial de modificaciones que registra el motivo del cambio y el usuario que lo realizó.
 
 ## En proceso
