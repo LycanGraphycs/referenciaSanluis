@@ -107,7 +107,7 @@ def mostrar_datos():
             visor.insert("", "end", values=record, tags=("reingreso",))
         else:
             visor.insert("", "end", values=record)
-    visor.tag_configure("reingreso", background="orange")  # Color naranja para ingresO
+    visor.tag_configure("reingreso", background="orange")  # Color naranja para ingreso
 
 
 def actualizar_fecha_aceptacion():
@@ -182,6 +182,11 @@ def mostrar_menu_contextual(event):
         menu.post(event.x_root, event.y_root)
 
 
+def ocultar_editar(event):
+    if event.keysym == 'Escape':
+        menu.unpost()  # Esto oculta el menú contextual
+
+
 def editar_registro():
     selected_item = visor.selection()
     if not selected_item:
@@ -235,6 +240,10 @@ def editar_registro():
 
     # Guardar cambios en el formulario
     def guardar_cambios():
+        # Verificar si se ha cargado algún dato para editar
+        if not entry_turno.get():
+            messagebox.showerror("Error", "No hay datos que guardar. Por favor, cargue un registro para editar.")
+            return
         fecha_hora_turno = entry_turno.get()
         fecha_hora_llamado = entry_llamado.get()
         fecha_hora_aceptacion = entry_aceptacion.get() if entry_aceptacion.get() else None
@@ -314,6 +323,9 @@ frame_visor.grid(row=3, column=0, sticky=(tk.W, tk.E))
 #logo = PhotoImage(file="logosanluis.png")
 #logo_label = tk.Label(frame_turno, image=logo)
 #logo_label.grid(row=0, column=5, padx=1, pady=20)
+
+# Botón para enviar el formulario
+ttk.Button(frame_botones, text="Enviar", command=insertar_datos).grid(row=0, column=0, padx=5, pady=5)
 
 # Frame para Fecha y Hora
 ttk.Label(frame_turno, text="Fecha y Hora de Turno").grid(row=1, column=1, padx=5, pady=5)
@@ -402,9 +414,6 @@ def autocompletar(event):
 diagnosticos = obtener_diagnosticos()
 entry_diagnostico.bind('<KeyRelease>', autocompletar)
 
-# Botón para enviar el formulario
-ttk.Button(frame_botones, text="Enviar", command=insertar_datos).grid(row=0, column=0, padx=5, pady=5)
-
 # Botón para actualizar la fecha de aceptación
 ttk.Button(frame_botones, text="Actualizar Fecha de Aceptación", command=actualizar_fecha_aceptacion).grid(row=0,
                                                                                                            column=1,
@@ -440,10 +449,10 @@ scrollbar = ttk.Scrollbar(frame_visor, orient=tk.VERTICAL, command=visor.yview)
 visor.configure(yscroll=scrollbar.set)
 scrollbar.grid(row=0, column=1, sticky='ns')
 
-
 # Agregar menú contextual
 menu = tk.Menu(root, tearoff=0)
 menu.add_command(label="Editar", command=editar_registro)
+root.bind('<Escape>', ocultar_editar)
 
 visor.bind("<Button-3>", mostrar_menu_contextual)
 
