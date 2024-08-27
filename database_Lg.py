@@ -9,7 +9,9 @@ def create_connection():
             host="localhost",
             user="ADMIN",
             password="sanluis2024*",
-            database="referenciaSl_db"
+            database="referenciaSl_db",
+            charset='utf8mb4',
+            collation='utf8mb4_general_ci'
         )
         print("Conexión a MySQL exitosa")
     except Error as e:
@@ -20,9 +22,17 @@ def create_connection():
 
 def obtener_diagnosticos():
     connection = create_connection()
-    cursor = connection.cursor()
-    cursor.execute("SELECT nombre FROM diagnosticos")
-    resultados = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return [row[0] for row in resultados]
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute("SELECT nombre FROM diagnosticos")
+        resultados = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return [row[0] for row in resultados]
+    else:
+        print("No se pudo establecer la conexión con la base de datos.")
+        return []
+
+
+diagnosticos = obtener_diagnosticos()
+

@@ -1,3 +1,6 @@
+# Derechos de Autor © LycanGraphycs - Andres Mauricio Moreno Garavito - Clinica San Luis 2024
+# Todos los derechos reservados. No se permite la distribución ni el uso de este código sin permiso explícito.
+
 import tkinter as tk
 import datetime
 from tkinter import ttk, messagebox, PhotoImage, simpledialog
@@ -42,23 +45,34 @@ def insertar_datos():
 
     if resultado > 0:
         respuesta = messagebox.askyesno("Reingreso", "¿El paciente es un reingreso?")
-        if not respuesta:
-            return
+        if respuesta:
+            reingreso = True
+        else:
+            reingreso = False
+            messagebox.showerror("Error", "Verifique los datos ingresados. No puede continuar hasta que seleccione "
+                                          "'Sí' o cambie la información.")
+            return  # No permite continuar hasta que seleccione "Sí" o cambie la información
+    else:
+        reingreso = False
 
-    # Inserción de datos a la base de datos
+        # Inserción de datos a la base de datos
+
     cursor = conn.cursor()
     sql = """INSERT INTO turnos (fecha_hora_turno, fecha_hora_llamado, fecha_hora_aceptacion, municipio_referencia,
-     entidad_remisora, nombres_apellidos, tipo_doc, documento, edad, asegurador, regimen, diagnostico, servicio, 
-     causa_no_aceptacion, usuario_san_luis) 
-             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+         entidad_remisora, nombres_apellidos, tipo_doc, documento, edad, asegurador, regimen, diagnostico, servicio, 
+         causa_no_aceptacion, usuario_san_luis, reingreso) 
+                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+
     values = (fecha_hora_turno, fecha_hora_llamado, fecha_hora_aceptacion, municipio_referencia, entidad_remisora,
               nombres_apellidos, tipo_doc, documento, edad, asegurador, regimen, diagnostico, servicio,
-              causa_no_aceptacion, usuario_san_luis)
+              causa_no_aceptacion, usuario_san_luis, reingreso)
 
     cursor.execute(sql, values)
     conn.commit()
     cursor.close()
+
     messagebox.showinfo("Información", "Datos insertados correctamente")
+    limpiar_campos()
     mostrar_datos()
 
 
@@ -89,7 +103,11 @@ def mostrar_datos():
     for row in visor.get_children():
         visor.delete(row)
     for record in registros_filtrados:
-        visor.insert("", "end", values=record)
+        if record[16]:  # Reingreso es True
+            visor.insert("", "end", values=record, tags=("reingreso",))
+        else:
+            visor.insert("", "end", values=record)
+    visor.tag_configure("reingreso", background="orange")  # Color naranja para ingresO
 
 
 def actualizar_fecha_aceptacion():
@@ -110,6 +128,7 @@ def actualizar_fecha_aceptacion():
     cursor.close()
 
     messagebox.showinfo("Información", "Fecha de Aceptación actualizada correctamente")
+    limpiar_campos()
     mostrar_datos()
 
 
@@ -153,6 +172,7 @@ def limpiar_campos():
     combo_servicio.set("")
     entry_causa.delete(0, tk.END)
     entry_usuario.delete(0, tk.END)
+    entry_buscar_documento.delete(0, tk.END)
 
 
 def mostrar_menu_contextual(event):
@@ -160,24 +180,6 @@ def mostrar_menu_contextual(event):
     if item_id:
         visor.selection_set(item_id)
         menu.post(event.x_root, event.y_root)
-
-
-def limpiar_campos():
-    entry_turno.delete(0, tk.END)
-    entry_llamado.delete(0, tk.END)
-    entry_aceptacion.delete(0, tk.END)
-    entry_municipio.delete(0, tk.END)
-    entry_entidad.delete(0, tk.END)
-    entry_nombres.delete(0, tk.END)
-    combo_tipo_doc.set("")
-    entry_documento.delete(0, tk.END)
-    entry_edad.delete(0, tk.END)
-    entry_asegurador.delete(0, tk.END)
-    combo_regimen.set("")
-    entry_diagnostico.set("")
-    combo_servicio.set("")
-    entry_causa.delete(0, tk.END)
-    entry_usuario.delete(0, tk.END)
 
 
 def editar_registro():
@@ -309,9 +311,9 @@ frame_visor = ttk.Frame(main_frame, padding="10")
 frame_visor.grid(row=3, column=0, sticky=(tk.W, tk.E))
 
 # Cargar y agregar el logo
-logo = PhotoImage(file="logosanluis.png")
-logo_label = tk.Label(frame_turno, image=logo)
-logo_label.grid(row=0, column=5, padx=1, pady=20)
+#logo = PhotoImage(file="logosanluis.png")
+#logo_label = tk.Label(frame_turno, image=logo)
+#logo_label.grid(row=0, column=5, padx=1, pady=20)
 
 # Frame para Fecha y Hora
 ttk.Label(frame_turno, text="Fecha y Hora de Turno").grid(row=1, column=1, padx=5, pady=5)
@@ -350,7 +352,7 @@ entry_documento = ttk.Entry(frame_info)
 entry_documento.grid(row=0, column=7, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Tipo de Documento").grid(row=1, column=0, padx=5, pady=5)
-combo_tipo_doc = ttk.Combobox(frame_info, values=["CC", "TI", "RC", "CE", "Otro"], state='readonly')
+combo_tipo_doc = ttk.Combobox(frame_info, values=["CC", "TI", "RC", "CE"], state='readonly')
 combo_tipo_doc.grid(row=1, column=1, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Edad").grid(row=1, column=2, padx=5, pady=5)
@@ -362,7 +364,7 @@ entry_asegurador = ttk.Entry(frame_info)
 entry_asegurador.grid(row=1, column=5, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Régimen").grid(row=1, column=6, padx=5, pady=5)
-combo_regimen = ttk.Combobox(frame_info, values=["Contributivo", "Subsidiado", "Especial", "Otro"], state='readonly')
+combo_regimen = ttk.Combobox(frame_info, values=["Contributivo", "Subsidiado", "Especial"], state='readonly')
 combo_regimen.grid(row=1, column=7, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Diagnóstico").grid(row=3, column=0, padx=5, pady=5)
@@ -371,7 +373,7 @@ entry_diagnostico.grid(row=3, column=1, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Servicio").grid(row=3, column=2, padx=5, pady=5)
 combo_servicio = ttk.Combobox(frame_info,
-                              values=["Urgencias", "Hospitalización", "Cirugía", "Consulta Externa", "Otro"],
+                              values=["Urgencias", "Hospitalización", "Cirugía", "Consulta Externa"],
                               state='readonly')
 combo_servicio.grid(row=3, column=3, padx=5, pady=5)
 
@@ -409,16 +411,16 @@ ttk.Button(frame_botones, text="Actualizar Fecha de Aceptación", command=actual
                                                                                                            padx=5,
                                                                                                            pady=5)
 
-ttk.Label(frame_botones, text="Buscar por Documento").grid(row=0, column=2, padx=5, pady=5)
+ttk.Label(frame_botones, text="Buscar por Documento").grid(row=0, column=3, padx=5, pady=5)
 entry_buscar_documento = ttk.Entry(frame_botones)
-entry_buscar_documento.grid(row=0, column=3, padx=5, pady=5)
+entry_buscar_documento.grid(row=0, column=4, padx=5, pady=5)
 btn_buscar_documento = ttk.Button(frame_botones, text="Buscar",
                                   command=lambda: buscar_por_documento(entry_buscar_documento))
-btn_buscar_documento.grid(row=0, column=4, padx=5, pady=5)
+btn_buscar_documento.grid(row=0, column=5, padx=5, pady=5)
 
 # Agregar botón para limpiar campos y volver a mostrar registros del día de hoy
 
-ttk.Button(frame_botones, text="Limpiar y Refrescar", command=limpiar_campos_y_refrescar).grid(row=0, column=5, padx=5,
+ttk.Button(frame_botones, text="Limpiar y Refrescar", command=limpiar_campos_y_refrescar).grid(row=0, column=6, padx=5,
                                                                                                pady=5)
 
 # Visor de datos
@@ -437,6 +439,7 @@ visor.grid(row=0, column=0, sticky='nsew')
 scrollbar = ttk.Scrollbar(frame_visor, orient=tk.VERTICAL, command=visor.yview)
 visor.configure(yscroll=scrollbar.set)
 scrollbar.grid(row=0, column=1, sticky='ns')
+
 
 # Agregar menú contextual
 menu = tk.Menu(root, tearoff=0)
