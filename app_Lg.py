@@ -11,6 +11,8 @@ from datetime import date, timedelta, datetime
 conn = create_connection()
 
 
+# Definición de funciones
+#############################################################################################################
 def insertar_datos():
     # Obtencion de los valores de los campos
     fecha_hora_turno = entry_turno.get()
@@ -76,7 +78,6 @@ def insertar_datos():
     mostrar_datos()
 
 
-# Definición de funciones
 def obtener_fecha_hora():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -290,6 +291,21 @@ def editar_registro():
     btn_guardar.grid(row=0, column=2, padx=5, pady=5)
 
 
+# Función de autocompletado
+def autocompletar(event):
+    value = entry_diagnostico.get()
+    if value == '':
+        entry_diagnostico['values'] = diagnosticos
+    else:
+        data = []
+        for item in diagnosticos:
+            if value.lower() in item.lower():
+                data.append(item)
+        entry_diagnostico['values'] = data
+
+
+#############################################################################################################
+# Estilos y frames
 # Crear la ventana principal
 root = tk.Tk()
 root.title("REFERENCIA Y CONTRAREFERENCIA CLINICA SAN LUIS")
@@ -397,28 +413,14 @@ ttk.Label(frame_info, text="Usuario San Luis").grid(row=3, column=6, padx=5, pad
 entry_usuario = ttk.Entry(frame_info)
 entry_usuario.grid(row=3, column=7, padx=5, pady=5)
 
-
-# Función de autocompletado
-def autocompletar(event):
-    value = entry_diagnostico.get()
-    if value == '':
-        entry_diagnostico['values'] = diagnosticos
-    else:
-        data = []
-        for item in diagnosticos:
-            if value.lower() in item.lower():
-                data.append(item)
-        entry_diagnostico['values'] = data
-
-
 diagnosticos = obtener_diagnosticos()
 entry_diagnostico.bind('<KeyRelease>', autocompletar)
 
+#############################################################################################################
+
 # Botón para actualizar la fecha de aceptación
-ttk.Button(frame_botones, text="Actualizar Fecha de Aceptación", command=actualizar_fecha_aceptacion).grid(row=0,
-                                                                                                           column=1,
-                                                                                                           padx=5,
-                                                                                                           pady=5)
+ttk.Button(frame_botones, text="Actualizar Fecha de Aceptación",
+           command=actualizar_fecha_aceptacion).grid(row=0, column=1, padx=5, pady=5)
 
 ttk.Label(frame_botones, text="Buscar por Documento").grid(row=0, column=3, padx=5, pady=5)
 entry_buscar_documento = ttk.Entry(frame_botones)
@@ -431,6 +433,8 @@ btn_buscar_documento.grid(row=0, column=5, padx=5, pady=5)
 
 ttk.Button(frame_botones, text="Limpiar y Refrescar", command=limpiar_campos_y_refrescar).grid(row=0, column=6, padx=5,
                                                                                                pady=5)
+
+#############################################################################################################
 
 # Visor de datos
 columnas = ("ID", "Fecha y Hora de Turno", "Fecha y Hora de Llamado", "Fecha y Hora de Aceptación",
@@ -455,6 +459,10 @@ menu.add_command(label="Editar", command=editar_registro)
 root.bind('<Escape>', ocultar_editar)
 
 visor.bind("<Button-3>", mostrar_menu_contextual)
+
+#############################################################################################################
+
+#############################################################################################################
 
 # Mostrar los datos al iniciar la aplicación
 mostrar_datos()
