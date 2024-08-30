@@ -45,6 +45,9 @@ def inicio_sesion():
     ventana_inicio = tk.Toplevel(root)
     ventana_inicio.title("Inicio de Sesión")
 
+    # Configura el comportamiento del botón "X" de la ventana de inicio de sesión
+    ventana_inicio.protocol("WM_DELETE_WINDOW", root.quit)
+
     ttk.Label(ventana_inicio, text="Usuario").grid(row=0, column=0, padx=5, pady=5)
     entry_usuario_inicio = ttk.Entry(ventana_inicio)
     entry_usuario_inicio.grid(row=0, column=1, padx=5, pady=5)
