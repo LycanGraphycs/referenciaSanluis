@@ -3,6 +3,8 @@
 
 import tkinter as tk
 import datetime
+import re
+import hashlib
 from tkinter import ttk, messagebox, PhotoImage, simpledialog
 from database_Lg import create_connection, obtener_diagnosticos
 from datetime import date, timedelta, datetime
@@ -10,9 +12,69 @@ from datetime import date, timedelta, datetime
 # Conexion a la base de datos
 conn = create_connection()
 
-
-# Definición de funciones
 #############################################################################################################
+# Crear la ventana principal
+root = tk.Tk()
+root.title("REFERENCIA Y CONTRAREFERENCIA CLINICA SAN LUIS")
+root.withdraw()  # Oculta la ventana principal al inicio
+
+
+# Inicio de sesion
+
+def verificar_usuario(usuario, contraseña):
+    connection = create_connection()
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute("SELECT pass FROM usuarios WHERE usuario = %s", (usuario,))
+        resultado = cursor.fetchone()
+        cursor.close()
+        connection.close()
+        if resultado:
+            hashed_password = resultado[0]
+            # Hash la contraseña ingresada por el usuario utilizando hashlib
+            hashed_contraseña = hashlib.sha256(contraseña.encode()).digest()
+            if hashed_contraseña == hashed_password:
+                return True
+        return False
+    else:
+        print("No se pudo establecer la conexión con la base de datos.")
+        return False
+
+
+def inicio_sesion():
+    ventana_inicio = tk.Toplevel(root)
+    ventana_inicio.title("Inicio de Sesión")
+
+    ttk.Label(ventana_inicio, text="Usuario").grid(row=0, column=0, padx=5, pady=5)
+    entry_usuario_inicio = ttk.Entry(ventana_inicio)
+    entry_usuario_inicio.grid(row=0, column=1, padx=5, pady=5)
+
+    ttk.Label(ventana_inicio, text="Contraseña").grid(row=1, column=0, padx=5, pady=5)
+    entry_contraseña_inicio = ttk.Entry(ventana_inicio, show="*")
+    entry_contraseña_inicio.grid(row=1, column=1, padx=5, pady=5)
+
+    def verificar_inicio_sesion():
+        usuario = entry_usuario_inicio.get()
+        contraseña = entry_contraseña_inicio.get()
+        if verificar_usuario(usuario, contraseña):
+            ventana_inicio.destroy()
+            root.deiconify()  # Muestra la ventana principal
+            entry_usuario.delete(0, tk.END)
+            entry_usuario.insert(0, usuario)
+        else:
+            messagebox.showerror("Error", "Usuario o contraseña incorrectos")
+
+    ttk.Button(ventana_inicio, text="Iniciar Sesión", command=verificar_inicio_sesion).grid(row=2, column=0,
+                                                                                            columnspan=2, padx=5,
+                                                                                            pady=5)
+
+
+#############################################################################################################
+inicio_sesion()
+
+
+#############################################################################################################
+# Definición de funciones
 def insertar_datos():
     # Obtencion de los valores de los campos
     fecha_hora_turno = entry_turno.get()
@@ -196,6 +258,8 @@ def editar_registro():
 
     item = visor.item(selected_item)
     record_id = item['values'][0]
+    documento = item['values'][8]  # Asumiendo que el documento está en la posición 8
+    fecha_hora_turno = item['values'][1]  # Asumiendo que la fecha y hora del turno está en la posición 1
 
     # Confirmar edición
     respuesta = messagebox.askyesno("Confirmación", "¿Desea editar este registro?")
@@ -206,6 +270,7 @@ def editar_registro():
     motivo = simpledialog.askstring("Motivo de la Modificación", "Ingrese el motivo de la modificación:")
     if not motivo:
         messagebox.showwarning("Advertencia", "El motivo de la modificación es obligatorio.")
+        return
     usuario2 = simpledialog.askstring("Usuario San Luis", "Ingrese su usuario:")
     if not usuario2:
         messagebox.showwarning("Advertencia", "El usuario es obligatorio.")
@@ -237,7 +302,7 @@ def editar_registro():
     entry_causa.delete(0, tk.END)
     entry_causa.insert(0, item['values'][14])
     entry_usuario.delete(0, tk.END)
-    entry_usuario.insert(0, item['values'][15])  # Asegúrate de que el índice es correcto
+    entry_usuario.insert(0, item['values'][15])
 
     # Guardar cambios en el formulario
     def guardar_cambios():
@@ -273,16 +338,16 @@ def editar_registro():
 
         cursor.execute(sql, values)
         conn.commit()
-        cursor.close()
 
-        # Guardar motivo de la modificación en la base de datos
-        cursor = conn.cursor()
-        sql = "INSERT INTO ediciones (id_turno, motivo, usuario2) VALUES (%s, %s, %s)"
-        cursor.execute(sql, (record_id, motivo, usuario2))
+        # Guardar motivo de la modificación y otros datos en la tabla ediciones
+        sql_ediciones = """INSERT INTO ediciones (id_turno, motivo, usuario2, documento, fecha_edicion, 
+        fecha_hora_turno) VALUES (%s, %s, %s, %s, %s, %s)"""
+        values_ediciones = (record_id, motivo, usuario2, documento, obtener_fecha_hora(), fecha_hora_turno)
+        cursor.execute(sql_ediciones, values_ediciones)
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Información", "Registro editado correctamente")
+        messagebox.showinfo("Información", "Registro editado y guardado correctamente en la tabla 'ediciones'.")
         mostrar_datos()
         limpiar_campos()
 
@@ -304,12 +369,42 @@ def autocompletar(event):
         entry_diagnostico['values'] = data
 
 
+# Función para validar que solo se ingresen letras
+def solo_letras(char):
+    return bool(re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$', char))
+
+
+# Función de validación que se llama cada vez que se inserta o elimina un carácter
+def validar_entrada(texto):
+    if solo_letras(texto):
+        return True
+    else:
+        return False
+
+
+# Función para validar que solo se ingresen numeros
+def solo_numeros(char):
+    return bool(re.match(r'^[0-9]*$', char))
+
+
+# Función de validación de documento que se llama cada vez que se inserta o elimina un carácter
+def validar_entrada_numeros(numeros):
+    if solo_numeros(numeros):
+        return True
+    else:
+        return False
+
+
+# Función de validación de edad que se llama cada vez que se inserta o elimina un carácter
+def validar_entrada_edad(edad):
+    if solo_numeros(edad):
+        return True
+    else:
+        return False
+
+
 #############################################################################################################
 # Estilos y frames
-# Crear la ventana principal
-root = tk.Tk()
-root.title("REFERENCIA Y CONTRAREFERENCIA CLINICA SAN LUIS")
-
 # Estilos con ttk
 style = ttk.Style()
 style.configure("TLabel", font=("Arial", 12), background="alice blue")
@@ -335,11 +430,6 @@ frame_botones.grid(row=2, column=0, sticky=(tk.W, tk.E))
 frame_visor = ttk.Frame(main_frame, padding="10")
 frame_visor.grid(row=3, column=0, sticky=(tk.W, tk.E))
 
-# Cargar y agregar el logo
-#logo = PhotoImage(file="logosanluis.png")
-#logo_label = tk.Label(frame_turno, image=logo)
-#logo_label.grid(row=0, column=5, padx=1, pady=20)
-
 # Botón para enviar el formulario
 ttk.Button(frame_botones, text="Enviar", command=insertar_datos).grid(row=0, column=0, padx=5, pady=5)
 
@@ -364,7 +454,8 @@ btn_aceptacion.grid(row=1, column=9, padx=5, pady=5)
 
 # Frame para Información del Paciente
 ttk.Label(frame_info, text="Municipio de Referencia").grid(row=0, column=0, padx=5, pady=5)
-entry_municipio = ttk.Entry(frame_info)
+validar_municipio = (root.register(lambda text: validar_entrada(text, entry_municipio)), '%P')
+entry_municipio = ttk.Entry(frame_info, validate="key", validatecommand=validar_municipio)
 entry_municipio.grid(row=0, column=1, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Entidad Remisora").grid(row=0, column=2, padx=5, pady=5)
@@ -372,11 +463,13 @@ entry_entidad = ttk.Entry(frame_info)
 entry_entidad.grid(row=0, column=3, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Nombres y Apellidos").grid(row=0, column=4, padx=5, pady=5)
-entry_nombres = ttk.Entry(frame_info)
+validar_nombres = (root.register(lambda text: validar_entrada(text, entry_nombres)), '%P')
+entry_nombres = ttk.Entry(frame_info, validate="key", validatecommand=validar_nombres)
 entry_nombres.grid(row=0, column=5, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Documento").grid(row=0, column=6, padx=5, pady=5)
-entry_documento = ttk.Entry(frame_info)
+validar_numeros = root.register(validar_entrada_numeros)
+entry_documento = ttk.Entry(frame_info, validate="key", validatecommand=(validar_numeros, '%P'))
 entry_documento.grid(row=0, column=7, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Tipo de Documento").grid(row=1, column=0, padx=5, pady=5)
@@ -384,7 +477,8 @@ combo_tipo_doc = ttk.Combobox(frame_info, values=["CC", "TI", "RC", "CE"], state
 combo_tipo_doc.grid(row=1, column=1, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Edad").grid(row=1, column=2, padx=5, pady=5)
-entry_edad = ttk.Entry(frame_info)
+validar_edad = root.register(validar_entrada_edad)
+entry_edad = ttk.Entry(frame_info, validate="key", validatecommand=(validar_edad, '%P'))
 entry_edad.grid(row=1, column=3, padx=5, pady=5)
 
 ttk.Label(frame_info, text="Asegurador").grid(row=1, column=4, padx=5, pady=5)
@@ -417,7 +511,6 @@ diagnosticos = obtener_diagnosticos()
 entry_diagnostico.bind('<KeyRelease>', autocompletar)
 
 #############################################################################################################
-
 # Botón para actualizar la fecha de aceptación
 ttk.Button(frame_botones, text="Actualizar Fecha de Aceptación",
            command=actualizar_fecha_aceptacion).grid(row=0, column=1, padx=5, pady=5)
@@ -435,8 +528,7 @@ ttk.Button(frame_botones, text="Limpiar y Refrescar", command=limpiar_campos_y_r
                                                                                                pady=5)
 
 #############################################################################################################
-
-# Visor de datos
+# Visor de datos y menu de edición
 columnas = ("ID", "Fecha y Hora de Turno", "Fecha y Hora de Llamado", "Fecha y Hora de Aceptación",
             "Municipio de Referencia", "Entidad Remisora", "Nombres y Apellidos", "Tipo de Documento",
             "Documento", "Edad", "Asegurador", "Régimen", "Diagnóstico", "Servicio",
@@ -461,10 +553,6 @@ root.bind('<Escape>', ocultar_editar)
 visor.bind("<Button-3>", mostrar_menu_contextual)
 
 #############################################################################################################
-
-#############################################################################################################
-
 # Mostrar los datos al iniciar la aplicación
 mostrar_datos()
-
 root.mainloop()
