@@ -4,6 +4,7 @@ Este es un proyecto de software desarrollado en Python utilizando la biblioteca 
 
 ## Características del Sistema
 
+- **Ingreso por usuario y contraseña:** Se aumenta el nivel de seguridad de la app.
 - **Registro de Pacientes:** Permite registrar nuevos pacientes, validando la entrada de datos y guardando la información en una base de datos MySQL.
 - **Gestión de Turnos:** Los usuarios pueden gestionar los turnos, asignando fechas y horas de atención o aceptación de traslado.
 - **Edición de Registros:** Los administradores pueden editar los datos de los pacientes, con un historial de modificaciones que registra el motivo del cambio y el usuario que lo realizó.
