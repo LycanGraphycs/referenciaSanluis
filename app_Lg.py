@@ -5,7 +5,7 @@ import tkinter as tk
 import datetime
 import re
 import hashlib
-from tkinter import ttk, messagebox, PhotoImage, simpledialog
+from tkinter import ttk, messagebox, simpledialog
 from database_Lg import create_connection, obtener_diagnosticos
 from datetime import date, timedelta, datetime
 
@@ -21,7 +21,7 @@ root.withdraw()  # Oculta la ventana principal al inicio
 
 # Inicio de sesion
 
-def verificar_usuario(usuario, contraseña):
+def verificar_usuario(usuario, contrasena):
     connection = create_connection()
     if connection is not None:
         cursor = connection.cursor()
@@ -31,9 +31,9 @@ def verificar_usuario(usuario, contraseña):
         connection.close()
         if resultado:
             hashed_password = resultado[0]
-            # Hash la contraseña ingresada por el usuario utilizando hashlib
-            hashed_contraseña = hashlib.sha256(contraseña.encode()).digest()
-            if hashed_contraseña == hashed_password:
+            # Hash la contrasena ingresada por el usuario utilizando hashlib
+            hashed_contrasena = hashlib.sha256(contrasena.encode()).digest()
+            if hashed_contrasena == hashed_password:
                 return True
         return False
     else:
@@ -53,13 +53,13 @@ def inicio_sesion():
     entry_usuario_inicio.grid(row=0, column=1, padx=5, pady=5)
 
     ttk.Label(ventana_inicio, text="Contraseña").grid(row=1, column=0, padx=5, pady=5)
-    entry_contraseña_inicio = ttk.Entry(ventana_inicio, show="*")
-    entry_contraseña_inicio.grid(row=1, column=1, padx=5, pady=5)
+    entry_contrasena_inicio = ttk.Entry(ventana_inicio, show="*")
+    entry_contrasena_inicio.grid(row=1, column=1, padx=5, pady=5)
 
     def verificar_inicio_sesion():
         usuario = entry_usuario_inicio.get()
-        contraseña = entry_contraseña_inicio.get()
-        if verificar_usuario(usuario, contraseña):
+        contrasena = entry_contrasena_inicio.get()
+        if verificar_usuario(usuario, contrasena):
             ventana_inicio.destroy()
             root.deiconify()  # Muestra la ventana principal
             entry_usuario.delete(0, tk.END)
@@ -115,7 +115,7 @@ def insertar_datos():
         if respuesta:
             reingreso = True
         else:
-            reingreso = False
+
             messagebox.showerror("Error", "Verifique los datos ingresados. No puede continuar hasta que seleccione "
                                           "'Sí' o cambie la información.")
             return  # No permite continuar hasta que seleccione "Sí" o cambie la información
@@ -148,8 +148,12 @@ def obtener_fecha_hora():
 
 
 def establecer_fecha_hora(campo):
+    # Permite modificar el campo temporalmente
+    campo.config(state='normal')
     campo.delete(0, tk.END)
     campo.insert(0, obtener_fecha_hora())
+    # Bloquea el campo para que no pueda ser editado
+    campo.config(state='readonly')
 
 
 def mostrar_datos():
@@ -261,8 +265,6 @@ def editar_registro():
 
     item = visor.item(selected_item)
     record_id = item['values'][0]
-    documento = item['values'][8]  # Asumiendo que el documento está en la posición 8
-    fecha_hora_turno = item['values'][1]  # Asumiendo que la fecha y hora del turno está en la posición 1
 
     # Confirmar edición
     respuesta = messagebox.askyesno("Confirmación", "¿Desea editar este registro?")
@@ -378,7 +380,7 @@ def solo_letras(char):
 
 
 # Función de validación que se llama cada vez que se inserta o elimina un carácter
-def validar_entrada(texto):
+def validar_entrada(texto, _):
     if solo_letras(texto):
         return True
     else:
