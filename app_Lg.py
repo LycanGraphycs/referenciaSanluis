@@ -227,8 +227,11 @@ def limpiar_campos_y_refrescar():
 
 
 def limpiar_campos():
+    entry_turno.config(state='normal')
     entry_turno.delete(0, tk.END)
+    entry_llamado.config(state='normal')
     entry_llamado.delete(0, tk.END)
+    entry_aceptacion.config(state='normal')
     entry_aceptacion.delete(0, tk.END)
     entry_municipio.delete(0, tk.END)
     entry_entidad.delete(0, tk.END)
